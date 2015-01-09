@@ -1,0 +1,2 @@
+gom 'github.com/alext/tablecloth', :commit => 'b373a9a'
+gom 'github.com/cloudflare/ahocorasick', :commit => '1ce46e42b741851faf33c1bf283eeae6676f70a8'
