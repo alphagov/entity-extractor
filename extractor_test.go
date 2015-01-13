@@ -1,53 +1,40 @@
 package main
 
 import (
-	"strings"
+	// "strings"
+	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 type ParseExample struct {
-	raw   string
-	terms []string
-	id    string
-	err   error
+	raw           string
+	expectedTerms []string
+	expectedId    string
+	expectedError error
 }
 
 var parseExamples = []ParseExample{
 	{
 		"{}",
-		[]string{},
+		make([]string, 0),
 		"",
 		nil,
 	},
-	{
-		`{"terms":["Government digital service","GDS"],"id":"1"}`,
-		[]string{"Government digital service", "GDS"},
-		"1",
-		nil,
-	},
-	{
-		`{"`,
-		[]string{},
-		"",
-		nil,
-	},
+	// {
+	// 	`{"terms":["Government digital service","GDS"],"id":"1"}`,
+	// 	[]string{"Government digital service", "GDS"},
+	// 	"1",
+	// 	nil,
+	// },
 }
 
 func TestParseEntityFromJson(t *testing.T) {
 	for i, example := range parseExamples {
-		entity, err := EntityFromJSON(example.raw)
+		actual, err := EntityFromJSON(example.raw)
 
-		if err != example.err {
-			t.Error("unexpected error in example", i, "error:", err, "expected:", example.err)
-		}
-
-		joinedTerms := strings.Join(entity.terms, ",")
-		joinedExpectedTerms := strings.Join(example.terms, ",")
-		if joinedTerms != joinedExpectedTerms {
-			t.Error("in example", i, "entity.terms != example.terms", joinedTerms, joinedExpectedTerms)
-		}
-		if entity.id != example.id {
-			t.Error("in example", i, "entity.id != example.id")
-		}
+		assert.Equal(t, example.expectedError, err, fmt.Sprint("unexpected error in example ", i))
+		assert.Equal(t, example.expectedTerms, actual.terms, fmt.Sprint("terms differ in example ", i))
+		assert.Equal(t, example.expectedId, actual.id, fmt.Sprint("ids differ in example ", i))
 	}
 }

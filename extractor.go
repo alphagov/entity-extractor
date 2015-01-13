@@ -38,7 +38,7 @@ type ParsedEntity struct {
 }
 
 func EntityFromJSON(raw string) (*ParsedEntity, error) {
-	var parsed ParsedEntity
+	parsed := ParsedEntity{make([]string, 0), ""}
 	err := json.Unmarshal([]byte(raw), &parsed)
 	return &parsed, err
 }
