@@ -1,7 +1,6 @@
 package main
 
 import (
-	// "strings"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -21,12 +20,12 @@ var parseExamples = []ParseExample{
 		"",
 		nil,
 	},
-	// {
-	// 	`{"terms":["Government digital service","GDS"],"id":"1"}`,
-	// 	[]string{"Government digital service", "GDS"},
-	// 	"1",
-	// 	nil,
-	// },
+	{
+		`{"terms":["Government digital service","GDS"],"id":"1"}`,
+		[]string{"Government digital service", "GDS"},
+		"1",
+		nil,
+	},
 }
 
 func TestParseEntityFromJson(t *testing.T) {
@@ -34,7 +33,7 @@ func TestParseEntityFromJson(t *testing.T) {
 		actual, err := EntityFromJSON(example.raw)
 
 		assert.Equal(t, example.expectedError, err, fmt.Sprint("unexpected error in example ", i))
-		assert.Equal(t, example.expectedTerms, actual.terms, fmt.Sprint("terms differ in example ", i))
-		assert.Equal(t, example.expectedId, actual.id, fmt.Sprint("ids differ in example ", i))
+		assert.Equal(t, example.expectedTerms, actual.Terms, fmt.Sprint("terms differ in example ", i))
+		assert.Equal(t, example.expectedId, actual.Id, fmt.Sprint("ids differ in example ", i))
 	}
 }

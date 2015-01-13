@@ -9,8 +9,7 @@ import (
 
 // An entity (which has an ID and several representative strings)
 type Entity struct {
-	id          string
-	termOffsets []uint
+	id string
 }
 
 type Entities struct {
@@ -24,23 +23,31 @@ type Extractor struct {
 	matcher  *ahocorasick.Matcher
 }
 
+type ParsedEntity struct {
+	Terms []string
+	Id    string
+}
+
 func NewExtractor(cfg *Config) *Extractor {
 	return &Extractor{cfg: cfg}
+}
+
+func (self *Entities) addEntity(parsedEntity ParsedEntity) {
+	entity := Entity{parsedEntity.Id}
+	for _, term := range parsedEntity.Terms {
+		self.terms = append(self.terms, term)
+		self.termOffsetToEntity = append(self.termOffsetToEntity, &entity)
+	}
 }
 
 func (extr *Extractor) LoadEntities() error {
 	return extr.loadEntitiesFromFile(extr.cfg.entitiesPath)
 }
 
-type ParsedEntity struct {
-	terms []string
-	id    string
-}
-
-func EntityFromJSON(raw string) (*ParsedEntity, error) {
+func EntityFromJSON(raw string) (ParsedEntity, error) {
 	parsed := ParsedEntity{make([]string, 0), ""}
 	err := json.Unmarshal([]byte(raw), &parsed)
-	return &parsed, err
+	return parsed, err
 }
 
 func (extr *Extractor) loadEntitiesFromFile(path string) error {
@@ -56,19 +63,11 @@ func (extr *Extractor) loadEntitiesFromFile(path string) error {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		_, err := EntityFromJSON(line)
+		entity, err := EntityFromJSON(line)
 		if err != nil {
 			return err
 		}
-
-		// FIXME - need to parse the JSON entity here,
-		// extract each representation as a term and add
-		// to the terms array.  Also need to build a map
-		// from offset in the terms array to a list of
-		// entity IDs.  Also need to handle multiple
-		// instances of each entity.
-		entities.terms = append(entities.terms, line)
-		//entities.termOffsetToEntity = append(entities.termOffsetToEntity, entity)
+		entities.addEntity(entity)
 	}
 
 	//extr.terms = terms
