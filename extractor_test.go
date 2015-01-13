@@ -74,3 +74,18 @@ func TestLoadEntities(t *testing.T) {
 		assert.Equal(t, expectedId, extractor.entities.termOffsetToEntity[i].id)
 	}
 }
+
+func TestExtract(t *testing.T) {
+	config := Config{
+		extractAddress: ":9999",
+		entitiesPath:   fixturePath("entities.jsonl"),
+		logPath:        "STDERR",
+	}
+
+	extractor := NewExtractor(&config)
+	extractor.LoadEntities()
+
+	document := "This document mentions GDS but it doesn't mention the Ministry of J..."
+	matchedTermIds := extractor.Extract(document)
+	assert.Equal(t, []string{"1"}, matchedTermIds)
+}

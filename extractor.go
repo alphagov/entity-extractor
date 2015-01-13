@@ -70,10 +70,19 @@ func (extr *Extractor) loadEntitiesFromFile(path string) error {
 		entities.addEntity(entity)
 	}
 
-	//extr.terms = terms
-	//extr.matcher = ahocorasick.NewStringMatcher(terms)
-	//logInfo("Loaded", len(extr.terms), "entities")
+	extr.matcher = ahocorasick.NewStringMatcher(entities.terms)
+	logInfo("Loaded", len(entities.terms), "terms")
 
 	extr.entities = entities
 	return nil
+}
+
+func (extr *Extractor) Extract(text string) []string {
+	matchIndexes := extr.matcher.Match([]byte(text))
+	matchingTermIds := make([]string, 0, 1000)
+	for _, termIndex := range matchIndexes {
+		matchingTermIds = append(matchingTermIds, extr.entities.termOffsetToEntity[termIndex].id)
+	}
+
+	return matchingTermIds
 }
