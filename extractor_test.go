@@ -78,12 +78,37 @@ func TestLoadEntities(t *testing.T) {
 	}
 }
 
+type ExtractionExample struct {
+	comment         string
+	document        string
+	expectedTermIds []string
+}
+
+var extractionExamples = []ExtractionExample{
+	{
+		"a document matching a single word term",
+		"This document mentions GDS but it doesn't mention the Ministry of J...",
+		[]string{"1"},
+	},
+	{
+		"a document matching a multi-word term",
+		"Government digital service",
+		[]string{"1"},
+	},
+	{
+		"terms are matched case sensitively",
+		"gds",
+		[]string{},
+	},
+}
+
 func TestExtract(t *testing.T) {
 	config := exampleConfig()
 	extractor := NewExtractor(config)
 	extractor.LoadEntities()
 
-	document := "This document mentions GDS but it doesn't mention the Ministry of J..."
-	matchedTermIds := extractor.Extract(document)
-	assert.Equal(t, []string{"1"}, matchedTermIds)
+	for _, example := range extractionExamples {
+		matchedTermIds := extractor.Extract(example.document)
+		assert.Equal(t, example.expectedTermIds, matchedTermIds, example.comment)
+	}
 }
