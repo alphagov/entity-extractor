@@ -16,7 +16,7 @@ func NewConfig() *Config {
 	cfg := new(Config)
 
 	cfg.extractAddress = getenvDefault("EXTRACTOR_EXTRACT_ADDR", ":3096")
-	cfg.entitiesPath = getenvDefault("EXTRACTOR_ENTITIES_PATH", "/var/apps/entity-extractor/data/entities.jsonl")
+	cfg.entitiesPath = getenvDefault("EXTRACTOR_ENTITIES_PATH", "data/entities.jsonl")
 	cfg.logPath = getenvDefault("EXTRACTOR_LOG_PATH", "STDERR")
 
 	flag.Usage = usage
