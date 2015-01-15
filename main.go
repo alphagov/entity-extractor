@@ -4,10 +4,8 @@ import (
 	"github.com/alext/tablecloth"
 	"github.com/alphagov/entity-extractor/logger"
 	"log"
-	"net/http"
 	"os"
 	"runtime"
-	"sync"
 )
 
 var (
@@ -17,14 +15,6 @@ var (
 
 func logInfo(msg ...interface{}) {
 	log.Println(msg...)
-}
-
-func catchListenAndServe(addr string, handler http.Handler, ident string, wg *sync.WaitGroup) {
-	defer wg.Done()
-	err := tablecloth.ListenAndServe(addr, handler, ident)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
 
 func SetGoMaxProcs() {
@@ -68,10 +58,9 @@ func main() {
 
 	extractorApi := NewExtractorAPI(extractor)
 
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	go catchListenAndServe(cfg.extractAddress, extractorApi, "extract", wg)
 	logInfo("listening for requests on", cfg.extractAddress)
-
-	wg.Wait()
+	err = tablecloth.ListenAndServe(cfg.extractAddress, extractorApi)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
