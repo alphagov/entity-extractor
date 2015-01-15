@@ -45,14 +45,17 @@ func fixturePath(fixtureFile string) string {
 	return path.Join(path.Dir(filename), "data", fixtureFile)
 }
 
-func TestLoadEntities(t *testing.T) {
-	config := Config{
-		extractAddress: ":9999",
+func exampleConfig() *Config {
+	return &Config{
+		extractAddress: ":3096",
 		entitiesPath:   fixturePath("entities.jsonl"),
 		logPath:        "STDERR",
 	}
+}
 
-	extractor := NewExtractor(&config)
+func TestLoadEntities(t *testing.T) {
+	config := exampleConfig()
+	extractor := NewExtractor(config)
 	extractor.LoadEntities()
 
 	expectedTerms := [...]string{
@@ -76,13 +79,8 @@ func TestLoadEntities(t *testing.T) {
 }
 
 func TestExtract(t *testing.T) {
-	config := Config{
-		extractAddress: ":9999",
-		entitiesPath:   fixturePath("entities.jsonl"),
-		logPath:        "STDERR",
-	}
-
-	extractor := NewExtractor(&config)
+	config := exampleConfig()
+	extractor := NewExtractor(config)
 	extractor.LoadEntities()
 
 	document := "This document mentions GDS but it doesn't mention the Ministry of J..."

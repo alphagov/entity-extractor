@@ -15,7 +15,7 @@ type Config struct {
 func NewConfig() *Config {
 	cfg := new(Config)
 
-	cfg.extractAddress = getenvDefault("EXTRACTOR_EXTRACT_ADDR", ":9999")
+	cfg.extractAddress = getenvDefault("EXTRACTOR_EXTRACT_ADDR", ":3096")
 	cfg.entitiesPath = getenvDefault("EXTRACTOR_ENTITIES_PATH", "/var/apps/entity-extractor/data/entities.jsonl")
 	cfg.logPath = getenvDefault("EXTRACTOR_LOG_PATH", "STDERR")
 
@@ -30,7 +30,7 @@ func usage() {
 	helpstring := `
 The following environment variables and defaults are available:
 
-EXTRACTOR_EXTRACT_ADDR=:9999  Address on which to serve extraction requests
+EXTRACTOR_EXTRACT_ADDR=:3096  Address on which to serve extraction requests
 EXTRACTOR_ENTITIES_PATH=/var/apps/entity-extractor/data/entities.jsonl
                               Path of file holding entities in jsonlines format
 EXTRACTOR_ERROR_LOG=STDERR    File to log errors to (in JSON format)
