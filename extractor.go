@@ -69,6 +69,9 @@ func (extr *Extractor) loadEntitiesFromFile(path string) error {
 		}
 		entities.addEntity(entity)
 	}
+	if err := scanner.Err(); err != nil {
+		return err
+	}
 
 	extr.matcher = ahocorasick.NewStringMatcher(entities.terms)
 	logInfo("Loaded", len(entities.terms), "terms")
