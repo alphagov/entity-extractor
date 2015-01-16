@@ -5,13 +5,15 @@ BUILDFILES := config.go extractor.go extractor_api.go main.go
 IMPORT_BASE := github.com/alphagov
 IMPORT_PATH := $(IMPORT_BASE)/entity-extractor
 
+all: test build
+
 build: _vendor
 	gom build -o $(BINARY) $(BUILDFILES)
 
 run: _vendor
 	gom run $(BUILDFILES)
 
-test: _vendor build
+test: _vendor
 	gom test -v
 
 clean:
