@@ -1,0 +1,5 @@
+image: go1.3
+script:
+ - export PATH=$PATH:$GOPATH/bin
+ - go get github.com/mattn/gom
+ - make test
