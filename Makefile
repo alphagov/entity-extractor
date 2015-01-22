@@ -1,11 +1,19 @@
-.PHONY: build run test clean
+.PHONY: build run test clean dist
 
 BINARY := entity-extractor
 BUILDFILES := config.go extractor.go extractor_api.go main.go
 IMPORT_BASE := github.com/alphagov
 IMPORT_PATH := $(IMPORT_BASE)/entity-extractor
+DISTFILES := $(BINARY) scripts/*
 
 all: test build
+
+dist/entity-extractor.zip: test build
+	mkdir -p dist
+	rm -f $@
+	zip $@ $(DISTFILES)
+
+dist: dist/entity-extractor.zip
 
 build: _vendor
 	gom build -o $(BINARY) $(BUILDFILES)
