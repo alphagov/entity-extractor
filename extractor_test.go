@@ -102,7 +102,10 @@ func TestExtract(t *testing.T) {
 	config := exampleConfig()
 	extractor := NewExtractor(config)
 	err := extractor.LoadEntities()
-	require.Nil(t, err)
+	if err != nil {
+		fmt.Println("ERROR: %v", err)
+		t.FailNow()
+	}
 
 	for _, example := range extractionExamples {
 		matchedTermIds := extractor.Extract(example.document)
