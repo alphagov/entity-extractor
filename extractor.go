@@ -1,10 +1,10 @@
 package main
 
 import (
-	"bufio"
+	"database/sql"
 	"encoding/json"
 	"github.com/cloudflare/ahocorasick"
-	"os"
+	_ "github.com/lib/pq"
 )
 
 // An entity (which has an ID and several representative strings)
@@ -23,53 +23,58 @@ type Extractor struct {
 	matcher  *ahocorasick.Matcher
 }
 
-type ParsedEntity struct {
-	Terms []string
-	Id    string
-}
-
 func NewExtractor(cfg *Config) *Extractor {
 	return &Extractor{cfg: cfg}
 }
 
-func (self *Entities) addEntity(parsedEntity ParsedEntity) {
-	entity := Entity{parsedEntity.Id}
-	for _, term := range parsedEntity.Terms {
-		self.terms = append(self.terms, term)
-		self.termOffsetToEntity = append(self.termOffsetToEntity, &entity)
-	}
-}
+func (self *Entities) addEntity(id string, termsJson string) error {
+	entity := Entity{id}
 
-func (extr *Extractor) LoadEntities() error {
-	return extr.loadEntitiesFromFile(extr.cfg.entitiesPath)
-}
+	var terms []string
 
-func EntityFromJSON(raw string) (ParsedEntity, error) {
-	parsed := ParsedEntity{make([]string, 0), ""}
-	err := json.Unmarshal([]byte(raw), &parsed)
-	return parsed, err
-}
-
-func (extr *Extractor) loadEntitiesFromFile(path string) error {
-	logInfo("Loading entities from", path)
-	file, err := os.Open(path)
+	err := json.Unmarshal([]byte(termsJson), &terms)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+
+	for _, term := range terms {
+		self.terms = append(self.terms, term)
+		self.termOffsetToEntity = append(self.termOffsetToEntity, &entity)
+	}
+
+	return nil
+}
+
+func (extr *Extractor) LoadEntities() error {
+	return extr.loadEntitiesFromDatabase(extr.cfg.dbConnectionString)
+}
+
+func (extr *Extractor) loadEntitiesFromDatabase(dbConnectionString string) error {
+	db, err := sql.Open("postgres", dbConnectionString)
+	if err != nil {
+		return err
+	}
+
+	rows, err := db.Query("SELECT id, terms FROM entities")
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
 
 	var entities Entities
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := scanner.Text()
 
-		entity, err := EntityFromJSON(line)
-		if err != nil {
+	for rows.Next() {
+		var id, terms string
+		if err := rows.Scan(&id, &terms); err != nil {
 			return err
 		}
-		entities.addEntity(entity)
+
+		if err := entities.addEntity(id, terms); err != nil {
+			return err
+		}
 	}
-	if err := scanner.Err(); err != nil {
+
+	if err := rows.Err(); err != nil {
 		return err
 	}
 
@@ -77,6 +82,7 @@ func (extr *Extractor) loadEntitiesFromFile(path string) error {
 	logInfo("Loaded", len(entities.terms), "terms")
 
 	extr.entities = entities
+
 	return nil
 }
 

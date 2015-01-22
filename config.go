@@ -7,16 +7,16 @@ import (
 )
 
 type Config struct {
-	extractAddress string
-	entitiesPath   string
-	logPath        string
+	extractAddress     string
+	dbConnectionString string
+	logPath            string
 }
 
 func NewConfig() *Config {
 	cfg := new(Config)
 
 	cfg.extractAddress = getenvDefault("EXTRACTOR_EXTRACT_ADDR", ":3096")
-	cfg.entitiesPath = getenvDefault("EXTRACTOR_ENTITIES_PATH", "data/entities.jsonl")
+	cfg.dbConnectionString = getenvDefault("EXTRACTOR_DB_CONNECTION_STRING", "host=/var/run/postgresql dbname=entity-extractor_development sslmode=disable")
 	cfg.logPath = getenvDefault("EXTRACTOR_LOG_PATH", "STDERR")
 
 	flag.Usage = usage
@@ -30,10 +30,19 @@ func usage() {
 	helpstring := `
 The following environment variables and defaults are available:
 
-EXTRACTOR_EXTRACT_ADDR=:3096  Address on which to serve extraction requests
-EXTRACTOR_ENTITIES_PATH=/var/apps/entity-extractor/data/entities.jsonl
-                              Path of file holding entities in jsonlines format
-EXTRACTOR_ERROR_LOG=STDERR    File to log errors to (in JSON format)
+EXTRACTOR_EXTRACT_ADDR
+  - Address on which to serve extraction requests
+  - Default: ':3096'
+
+EXTRACTOR_DB_CONNECTION_STRING
+  - a postgresql connection string[1] used to connect to the database.
+    Entites are read at startup from this database.
+  - Default: 'host=/var/run/postgresql dbname=entity-extractor_development sslmode=disable'
+  [1] http://godoc.org/github.com/lib/pq#hdr-Connection_String_Parameters
+
+EXTRACTOR_ERROR_LOG
+  - File to log errors to (in JSON format)
+  - Default: 'STDERR'
 `
 	fmt.Fprintf(os.Stderr, helpstring)
 	os.Exit(2)

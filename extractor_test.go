@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"path"
 	"runtime"
 	"testing"
@@ -30,16 +31,6 @@ var parseExamples = []ParseExample{
 	},
 }
 
-func TestParseEntityFromJson(t *testing.T) {
-	for i, example := range parseExamples {
-		actual, err := EntityFromJSON(example.raw)
-
-		assert.Equal(t, example.expectedError, err, fmt.Sprint("unexpected error in example ", i))
-		assert.Equal(t, example.expectedTerms, actual.Terms, fmt.Sprint("terms differ in example ", i))
-		assert.Equal(t, example.expectedId, actual.Id, fmt.Sprint("ids differ in example ", i))
-	}
-}
-
 func fixturePath(fixtureFile string) string {
 	_, filename, _, _ := runtime.Caller(1)
 	return path.Join(path.Dir(filename), "data", fixtureFile)
@@ -47,16 +38,20 @@ func fixturePath(fixtureFile string) string {
 
 func exampleConfig() *Config {
 	return &Config{
-		extractAddress: ":3096",
-		entitiesPath:   fixturePath("entities.jsonl"),
-		logPath:        "STDERR",
+		extractAddress:     ":3096",
+		dbConnectionString: "host=/var/run/postgresql dbname=entity-extractor_test sslmode=disable",
+		logPath:            "STDERR",
 	}
 }
 
 func TestLoadEntities(t *testing.T) {
 	config := exampleConfig()
 	extractor := NewExtractor(config)
-	extractor.LoadEntities()
+	err := extractor.LoadEntities()
+	if err != nil {
+		fmt.Println(err)
+		t.FailNow()
+	}
 
 	expectedTerms := [...]string{
 		"Government digital service",
@@ -64,6 +59,7 @@ func TestLoadEntities(t *testing.T) {
 		"Ministry of Justice",
 		"MoJ",
 	}
+	require.Equal(t, len(expectedTerms), len(extractor.entities.terms))
 	for i, expectedTerm := range expectedTerms {
 		assert.Equal(t, expectedTerm, extractor.entities.terms[i])
 	}
@@ -105,7 +101,8 @@ var extractionExamples = []ExtractionExample{
 func TestExtract(t *testing.T) {
 	config := exampleConfig()
 	extractor := NewExtractor(config)
-	extractor.LoadEntities()
+	err := extractor.LoadEntities()
+	require.Nil(t, err)
 
 	for _, example := range extractionExamples {
 		matchedTermIds := extractor.Extract(example.document)
