@@ -2,4 +2,4 @@
 set -e
 
 git clean -fdx
-make
+make dist
