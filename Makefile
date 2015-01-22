@@ -30,11 +30,12 @@ test: _vendor test_database
 clean:
 	rm -f $(BINARY)
 
-_vendor: Gomfile _vendor/src/$(IMPORT_PATH)
+_vendor: Gomfile _vendor/src/.symlink_created
 	gom install
-	touch _vendor
+	touch $@
 
-_vendor/src/$(IMPORT_PATH):
+_vendor/src/.symlink_created:
 	rm -f _vendor/src/$(IMPORT_PATH)
 	mkdir -p _vendor/src/$(IMPORT_BASE)
 	ln -s $(CURDIR) _vendor/src/$(IMPORT_PATH)
+	touch $@
