@@ -13,7 +13,18 @@ build: _vendor
 run: _vendor
 	gom run $(BUILDFILES)
 
-test: _vendor
+test_database:
+	(psql -lqt | cut -d \| -f 1 | grep -q -w entity-extractor_test >/dev/null) || \
+	( \
+		(createdb -T template0 -E UTF8 entity-extractor_test) && \
+		(psql entity-extractor_test < db/schema.sql) && \
+		(psql entity-extractor_test < db/test-fixtures.sql) \
+	)
+
+drop_test_database:
+	dropdb entity-extractor_test
+
+test: _vendor test_database
 	gom test -v
 
 clean:
