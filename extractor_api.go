@@ -39,23 +39,22 @@ func NewExtractorAPI(extractor *Extractor) http.Handler {
 
 		matchedTermIds := extractor.Extract(string(postBody))
 		if matchedTermIds == nil {
-			errlog.Log(map[string]interface{}{
-				"message":  "matchedTermIds was nil",
-				"document": string(postBody),
-				"status":   500,
-			})
+			errlog.LogFromClientRequest(map[string]interface{}{
+				"error":  "matchedTermIds was nil",
+				"status": 500,
+			}, r)
 
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		marshalled, err := json.Marshal(matchedTermIds)
+		var marshalled []byte
+		marshalled, err = json.Marshal(matchedTermIds)
 		if err != nil {
-			errlog.Log(map[string]interface{}{
-				"message": "Failed to marshal matched terms to Json",
-				"error":   fmt.Sprintf("%v", err),
-				"status":  500,
-			})
+			errlog.LogFromClientRequest(map[string]interface{}{
+				"error":  fmt.Sprintf("Failed to marshal matched terms to Json: %v", err),
+				"status": 500,
+			}, r)
 
 			w.WriteHeader(http.StatusInternalServerError)
 			return
