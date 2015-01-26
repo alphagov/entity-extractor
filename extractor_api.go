@@ -31,7 +31,7 @@ func NewExtractorAPI(extractor *Extractor) http.Handler {
 		if err != nil {
 			errlog.LogFromClientRequest(map[string]interface{}{
 				"error":  fmt.Sprintf("Error reading post body: %v", err),
-				"status": 500,
+				"status": http.StatusInternalServerError,
 			}, r)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -41,7 +41,7 @@ func NewExtractorAPI(extractor *Extractor) http.Handler {
 		if matchedTermIds == nil {
 			errlog.LogFromClientRequest(map[string]interface{}{
 				"error":  "matchedTermIds was nil",
-				"status": 500,
+				"status": http.StatusInternalServerError,
 			}, r)
 
 			w.WriteHeader(http.StatusInternalServerError)
@@ -53,7 +53,7 @@ func NewExtractorAPI(extractor *Extractor) http.Handler {
 		if err != nil {
 			errlog.LogFromClientRequest(map[string]interface{}{
 				"error":  fmt.Sprintf("Failed to marshal matched terms to Json: %v", err),
-				"status": 500,
+				"status": http.StatusInternalServerError,
 			}, r)
 
 			w.WriteHeader(http.StatusInternalServerError)
