@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -28,7 +29,28 @@ func NewExtractorAPI(extractor *Extractor) http.Handler {
 		postBody := make([]byte, 10000)
 		r.Body.Read(postBody)
 		matchedTermIds := extractor.Extract(string(postBody))
-		marshalled, _ := json.Marshal(matchedTermIds)
+		if matchedTermIds == nil {
+			errlog.Log(map[string]interface{}{
+				"message":  "matchedTermIds was nil",
+				"document": string(postBody),
+				"status":   500,
+			})
+
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		marshalled, err := json.Marshal(matchedTermIds)
+		if err != nil {
+			errlog.Log(map[string]interface{}{
+				"message": "Failed to marshal matched terms to Json",
+				"error":   fmt.Sprintf("%v", err),
+				"status":  500,
+			})
+
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
 		w.Write(marshalled)
 	})
