@@ -26,10 +26,21 @@ func NewExtractorAPI(extractor *Extractor) http.Handler {
 			return
 		}
 
+		fmt.Printf("Reading post body\n")
+		fmt.Printf("%v\n", r.Header)
+
 		postBody := make([]byte, 100000)
-		r.Body.Read(postBody)
+		n, err := r.Body.Read(postBody)
+
+		if err != nil {
+			fmt.Printf("Error reading post body: %v\n", err)
+			return
+		}
+		fmt.Printf("Read %v bytes into post body\n", n)
+
 		matchedTermIds := extractor.Extract(string(postBody))
 		if matchedTermIds == nil {
+			fmt.Printf("Matched term ids was nil\n")
 			errlog.Log(map[string]interface{}{
 				"message":  "matchedTermIds was nil",
 				"document": string(postBody),
@@ -40,8 +51,10 @@ func NewExtractorAPI(extractor *Extractor) http.Handler {
 			return
 		}
 
-		marshalled, err := json.Marshal(matchedTermIds)
+		var marshalled []byte
+		marshalled, err = json.Marshal(matchedTermIds)
 		if err != nil {
+			fmt.Printf("Faild to marshal due to: %v", err)
 			errlog.Log(map[string]interface{}{
 				"message": "Failed to marshal matched terms to Json",
 				"error":   fmt.Sprintf("%v", err),
