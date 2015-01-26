@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -26,8 +27,16 @@ func NewExtractorAPI(extractor *Extractor) http.Handler {
 			return
 		}
 
-		postBody := make([]byte, 100000)
-		r.Body.Read(postBody)
+		postBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			errlog.LogFromClientRequest(map[string]interface{}{
+				"error":  fmt.Sprintf("Error reading post body: %v", err),
+				"status": 500,
+			}, r)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		matchedTermIds := extractor.Extract(string(postBody))
 		if matchedTermIds == nil {
 			errlog.Log(map[string]interface{}{
