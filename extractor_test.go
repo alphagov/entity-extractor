@@ -53,24 +53,39 @@ func TestLoadEntities(t *testing.T) {
 		t.FailNow()
 	}
 
-	expectedTerms := [...]string{
-		"Government digital service",
-		"GDS",
-		"Ministry of Justice",
-		"MoJ",
+	expectedEntities := [...]Entity{
+
+		Entity{"1",
+			[]Representation{
+				Representation{
+					"Government digital service",
+					Tokens{[]string{"government", "digital", "service"}},
+				},
+				Representation{
+					"GDS",
+					Tokens{[]string{"gds"}},
+				},
+			},
+		},
+
+		Entity{"2",
+			[]Representation{
+				Representation{
+					"Ministry of Justice",
+					Tokens{[]string{"ministry", "of", "justice"}},
+				},
+				Representation{
+					"MoJ",
+					Tokens{[]string{"moj"}},
+				},
+			},
+		},
 	}
-	require.Equal(t, len(expectedTerms), len(extractor.entities.terms))
-	for i, expectedTerm := range expectedTerms {
-		assert.Equal(t, expectedTerm, extractor.entities.terms[i])
-	}
-	expectedIds := [...]string{
-		"1",
-		"1",
-		"2",
-		"2",
-	}
-	for i, expectedId := range expectedIds {
-		assert.Equal(t, expectedId, extractor.entities.termOffsetToEntity[i].id)
+
+	require.Equal(t, len(expectedEntities), len(extractor.entities.entities))
+	for i, expectedEntity := range expectedEntities {
+		e := extractor.entities.entities[i]
+		assert.Equal(t, expectedEntity, e)
 	}
 }
 

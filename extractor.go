@@ -2,45 +2,29 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
-	"github.com/cloudflare/ahocorasick"
 	_ "github.com/lib/pq"
 )
 
-// An entity (which has an ID and several representative strings)
-type Entity struct {
-	id string
-}
-
 type Entities struct {
-	terms              []string
-	termOffsetToEntity []*Entity
+	entities []Entity
 }
 
 type Extractor struct {
 	cfg      *Config
 	entities Entities
-	matcher  *ahocorasick.Matcher
 }
 
 func NewExtractor(cfg *Config) *Extractor {
 	return &Extractor{cfg: cfg}
 }
 
-func (self *Entities) addEntity(id string, termsJson string) error {
-	entity := Entity{id}
-
-	var terms []string
-
-	err := json.Unmarshal([]byte(termsJson), &terms)
+func (entities *Entities) addEntity(id string, termsJson string) error {
+	entity, err := NewEntity(id, termsJson)
 	if err != nil {
 		return err
 	}
 
-	for _, term := range terms {
-		self.terms = append(self.terms, term)
-		self.termOffsetToEntity = append(self.termOffsetToEntity, &entity)
-	}
+	entities.entities = append(entities.entities, *entity)
 
 	return nil
 }
@@ -78,20 +62,13 @@ func (extr *Extractor) loadEntitiesFromDatabase(dbConnectionString string) error
 		return err
 	}
 
-	extr.matcher = ahocorasick.NewStringMatcher(entities.terms)
-	logInfo("Loaded", len(entities.terms), "terms")
-
 	extr.entities = entities
 
 	return nil
 }
 
 func (extr *Extractor) Extract(text string) []string {
-	matchIndexes := extr.matcher.Match([]byte(text))
-	matchingTermIds := make([]string, 0, 1000)
-	for _, termIndex := range matchIndexes {
-		matchingTermIds = append(matchingTermIds, extr.entities.termOffsetToEntity[termIndex].id)
-	}
+	matchingEntityIds := make([]string, 0, 1000)
 
-	return matchingTermIds
+	return matchingEntityIds
 }

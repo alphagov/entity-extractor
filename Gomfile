@@ -1,4 +1,6 @@
 gom 'github.com/alext/tablecloth', :commit => 'b373a9a'
-gom 'github.com/cloudflare/ahocorasick', :commit => '1ce46e42b741851faf33c1bf283eeae6676f70a8'
+gom 'github.com/blevesearch/segment', :commit => '9588637ce3caba8516208ccc17193ddedd741418'
 gom 'github.com/stretchr/testify/assert'
 gom 'github.com/lib/pq', :commit => '19eeca3e30d2577b1761db471ec130810e67f532'
+gom 'golang.org/x/text/unicode/norm'
+gom 'golang.org/x/text/transform'
