@@ -26,7 +26,7 @@ func NewExtractorAPI(extractor *Extractor) http.Handler {
 			return
 		}
 
-		postBody := make([]byte, 10000)
+		postBody := make([]byte, 100000)
 		r.Body.Read(postBody)
 		matchedTermIds := extractor.Extract(string(postBody))
 		if matchedTermIds == nil {
