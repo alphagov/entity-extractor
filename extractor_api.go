@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -26,27 +27,34 @@ func NewExtractorAPI(extractor *Extractor) http.Handler {
 			return
 		}
 
-		postBody := make([]byte, 100000)
-		r.Body.Read(postBody)
+		postBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			errlog.LogFromClientRequest(map[string]interface{}{
+				"error":  fmt.Sprintf("Error reading post body: %v", err),
+				"status": http.StatusInternalServerError,
+			}, r)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
 		matchedTermIds := extractor.Extract(string(postBody))
 		if matchedTermIds == nil {
-			errlog.Log(map[string]interface{}{
-				"message":  "matchedTermIds was nil",
-				"document": string(postBody),
-				"status":   500,
-			})
+			errlog.LogFromClientRequest(map[string]interface{}{
+				"error":  "matchedTermIds was nil",
+				"status": http.StatusInternalServerError,
+			}, r)
 
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		marshalled, err := json.Marshal(matchedTermIds)
+		var marshalled []byte
+		marshalled, err = json.Marshal(matchedTermIds)
 		if err != nil {
-			errlog.Log(map[string]interface{}{
-				"message": "Failed to marshal matched terms to Json",
-				"error":   fmt.Sprintf("%v", err),
-				"status":  500,
-			})
+			errlog.LogFromClientRequest(map[string]interface{}{
+				"error":  fmt.Sprintf("Failed to marshal matched terms to Json: %v", err),
+				"status": http.StatusInternalServerError,
+			}, r)
 
 			w.WriteHeader(http.StatusInternalServerError)
 			return
